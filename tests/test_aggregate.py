@@ -35,8 +35,7 @@ class AggregateTest(unittest.TestCase):
         self.assertAlmostEqual(14.0, aggregate_stats.maximum)
         self.assertAlmostEqual(8.0, aggregate_stats.mean)
         self.assertAlmostEqual(10.0, aggregate_stats.median)
-        self.assertAlmostEqual(5.8878405775518976,
-                               aggregate_stats.standard_deviation)
+        self.assertAlmostEqual(5.888, aggregate_stats.standard_deviation, 3)
         self.assertEqual(3, aggregate_stats.sample_count)
 
     def test_aggregate_ignores_None_values(self):
@@ -46,6 +45,5 @@ class AggregateTest(unittest.TestCase):
         self.assertAlmostEqual(14.0, aggregate_stats.maximum)
         self.assertAlmostEqual(8.0, aggregate_stats.mean)
         self.assertAlmostEqual(10.0, aggregate_stats.median)
-        self.assertAlmostEqual(5.8878405775518976,
-                               aggregate_stats.standard_deviation)
+        self.assertAlmostEqual(5.888, aggregate_stats.standard_deviation, 3)
         self.assertEqual(3, aggregate_stats.sample_count)
