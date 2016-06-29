@@ -79,14 +79,14 @@ def add_testdata_prefix(filename):
 class ReadResultsTest(unittest.TestCase):
 
     def test_reads_raw_result_file_correctly(self):
-        actual_results = read_results.parse_files([add_testdata_prefix(
-            RAW_RESULT_FILENAME)])
+        actual_results = read_results.parse_files(
+            [add_testdata_prefix(RAW_RESULT_FILENAME)])
         expected_results = {RAW_RESULT_FILENAME: RAW_RESULT}
         self.assertDictEqual(expected_results, actual_results)
 
     def test_reads_packaged_result_file_correctly(self):
-        actual_results = read_results.parse_files([add_testdata_prefix(
-            RESULT_PACKAGE_FILENAME)])
+        actual_results = read_results.parse_files(
+            [add_testdata_prefix(RESULT_PACKAGE_FILENAME)])
         expected_results = {PACKAGED_RESULT_FILENAME: PACKAGED_RESULT}
         self.assertDictEqual(expected_results, actual_results)
 

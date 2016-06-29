@@ -33,11 +33,11 @@ def ndt_results_to_csv(results):
         A CSV string describing the NDT results.
     """
     output = io.BytesIO()
-    csv_writer = csv.DictWriter(
-        output,
-        fieldnames=['filename', 'total_duration', 'c2s_throughput',
-                    'c2s_duration', 's2c_throughput', 's2c_duration', 'latency',
-                    'error', 'error_list'])
+    csv_writer = csv.DictWriter(output,
+                                fieldnames=['filename', 'total_duration',
+                                            'c2s_throughput', 'c2s_duration',
+                                            's2c_throughput', 's2c_duration',
+                                            'latency', 'error', 'error_list'])
     # Write a header row with friendly names for each column
     csv_writer.writerow({
         'filename': 'Filename',
