@@ -40,20 +40,19 @@ def parse_filename(filename):
     # help split software from it's version number.
     regex = re.compile('^([a-z]+)(\d.*)$')
 
-    software = {}
+    metadata = {}
 
-    # If there aren't three split from the filename, then there is something
-    # wrong.
-    filename_parts = filename.split('-')[:3]
-    if len(filename_parts) != 3:
+    # The filenames we know about should contain 7 parts separated by dashes.
+    filename_parts = filename.split('-')
+    if len(filename_parts) != 7:
         logging.error('Unknown filename format: {}'.format(row['filename']))
         sys.exit(1)
 
     # Determines the OS and version
     os_matches = regex.match(filename_parts[0])
     if os_matches:
-        software['os'] = os_matches.groups()[0]
-        software['os_version'] = os_matches.groups()[1]
+        metadata['os'] = os_matches.groups()[0]
+        metadata['os_version'] = os_matches.groups()[1]
     else:
         logging.error('Could not determine OS and version from: {}'.format(
             filename_parts[0]))
@@ -62,16 +61,19 @@ def parse_filename(filename):
     # Determines the browser and version
     browser_matches = regex.match(filename_parts[1])
     if browser_matches:
-        software['browser'] = browser_matches.groups()[0]
-        software['browser_version'] = browser_matches.groups()[1]
+        metadata['browser'] = browser_matches.groups()[0]
+        metadata['browser_version'] = browser_matches.groups()[1]
     else:
         logging.error('Could not determine browser and version from: {}'.format(
             filename_parts[1]))
 
     # The NDT client name isn't versioned, so just return it whole.
-    software['client'] = filename_parts[2]
+    metadata['client'] = filename_parts[2]
 
-    return software
+    # Fields 4-6 are datetime data... rejoin them.
+    metadata['timestamp'] = '-'.join(filename_parts[3:6])
+
+    return metadata
 
 
 def parse_csv(csv_file):
@@ -93,24 +95,35 @@ def parse_csv(csv_file):
         if row['filename'] == 'Filename':
             continue
         
-        # Extracts software names and versions from 'filename' field.
-        s = parse_filename(row['filename'])
+        # Extracts metadata about the test from the filename.
+        m = parse_filename(row['filename'])
         
-        # Skip first item in list ('filename'), since we hande that elsewhere.
-        for field in fields[1:]:
-            # If this field/metric doesn't already exist for this
-            # OS/browser/client combination, then create it as a list.
-            if not e2e_metrics[s['os']][s['browser']][s['client']][field]:
-                e2e_metrics[s['os']][s['browser']][s['client']][field] = []
-
-            # Appends the value of this metric to the list.
-            e2e_metrics[s['os']][s['browser']][s['client']][field].append(row[field])
+        for field in fields:
+            # We've already processed the field 'filename' and we don't care
+            # about the field 'error_list'.
+            if field in ['filename', 'error_list']:
+                continue
+            e2e_metrics[m['os']]['version'] = m['os_version']
+            e2e_metrics[m['os']]['browsers'][m['browser']]['version'] = m['browser_version']
+            e2e_metrics[m['os']]['browsers'][m['browser']]['clients'][m['client']][field][m['timestamp']] = row[field]
 
     return e2e_metrics
 
 
 def aggregate_metrics(results):
-    return 'Do something eventually.'
+    aggs = results
+    for opersys in results:
+        for browser in results[opersys]['browsers']:
+            for client in results[opersys]['browsers'][browser]['clients']:
+                for metric in results[opersys]['browsers'][browser]['clients'][client]:
+                    count = len(results[opersys]['browsers'][browser]['clients'][client][metric])
+                    metric_sum = 0
+                    for ts, data in results[opersys]['browsers'][browser]['clients'][client][metric].iteritems():
+                        if data:
+                            metric_sum += float(data)
+                    mean = metric_sum / count
+                    aggs[opersys]['browsers'][browser]['clients'][client][metric] = mean
+    return aggs
 
 
 def main():
