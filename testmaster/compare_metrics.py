@@ -87,25 +87,27 @@ def parse_csv(csv_file):
     # or code friendly.
     fields = ['filename', 'total_duration', 'c2s_speed', 'c2s_duration',
               's2c_speed', 's2c_duration', 'latency', 'has_error', 'error_list']
-    
+
     rows = csv.DictReader(csv_file, fields)
     for row in rows:
         # The first row of the CSV file has field names, which we don't care
         # about since we've created our own mapping in the 'fields' list.
         if row['filename'] == 'Filename':
             continue
-        
+
         # Extracts metadata about the test from the filename.
         m = parse_filename(row['filename'])
-        
+
         for field in fields:
             # We've already processed the field 'filename' and we don't care
             # about the field 'error_list'.
             if field in ['filename', 'error_list']:
                 continue
             e2e_metrics[m['os']]['version'] = m['os_version']
-            e2e_metrics[m['os']]['browsers'][m['browser']]['version'] = m['browser_version']
-            e2e_metrics[m['os']]['browsers'][m['browser']]['clients'][m['client']][field][m['timestamp']] = row[field]
+            e2e_metrics[m['os']]['browsers'][m['browser']]['version'] = m[
+                'browser_version']
+            e2e_metrics[m['os']]['browsers'][m['browser']]['clients'][m[
+                'client']][field][m['timestamp']] = row[field]
 
     return e2e_metrics
 
@@ -115,19 +117,24 @@ def aggregate_metrics(results):
     for opersys in results:
         for browser in results[opersys]['browsers']:
             for client in results[opersys]['browsers'][browser]['clients']:
-                for metric in results[opersys]['browsers'][browser]['clients'][client]:
-                    count = len(results[opersys]['browsers'][browser]['clients'][client][metric])
+                for metric in results[opersys]['browsers'][browser]['clients'][
+                        client]:
+                    count = len(results[opersys]['browsers'][browser][
+                        'clients'][client][metric])
                     metric_sum = 0
-                    for ts, data in results[opersys]['browsers'][browser]['clients'][client][metric].iteritems():
+                    for ts, data in results[opersys]['browsers'][browser][
+                            'clients'][client][metric].iteritems():
                         if data:
                             metric_sum += float(data)
                     mean = metric_sum / count
-                    aggs[opersys]['browsers'][browser]['clients'][client][metric] = mean
+                    aggs[opersys]['browsers'][browser]['clients'][client][
+                        metric] = mean
     return aggs
 
 
 def main():
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(levelname)s: %(message)s',
+                        level=logging.DEBUG)
 
     args = parse_options(sys.argv[1:])
 
@@ -142,7 +149,7 @@ def main():
 
     old_aggs = aggregate_metrics(old_results)
     new_aggs = aggregate_metrics(new_results)
-    
+
 
 if __name__ == '__main__':
     main()
