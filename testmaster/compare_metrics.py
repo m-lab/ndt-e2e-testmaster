@@ -193,12 +193,14 @@ def compare_metrics(old_avgs, new_avgs):
             for client in new_avgs[opersys]['browsers'][browser]['clients']:
                 for metric in new_avgs[opersys]['browsers'][browser]['clients'][
                         client]:
-                    new_avg = new_avgs[opersys]['browsers'][browser]['clients'][client][metric]
+                    new_avg = new_avgs[opersys]['browsers'][browser]['clients'][
+                        client][metric]
 
                     # If this OS/browser/client/metric doesn't exist in the old
                     # results, then note that.
                     try:
-                        old_avg = old_avgs[opersys]['browsers'][browser]['clients'][client][metric]
+                        old_avg = old_avgs[opersys]['browsers'][browser][
+                            'clients'][client][metric]
                     except KeyError as e:
                         old_avg = 'none'
 
@@ -219,7 +221,8 @@ def compare_metrics(old_avgs, new_avgs):
                     }
                     rows.append(row)
 
-                    print '{os:10},{browser:10},{client:10},{metric:15},{old_avg:7},{new_avg:7},{%change:>7}'.format(**row)
+                    print '{os:10},{browser:10},{client:10},{metric:15},' \
+                          '{old_avg:7},{new_avg:7},{%change:>7}'.format(**row)
 
     return rows
 
@@ -232,7 +235,8 @@ def write_results(output_file, rows):
         rows: list, a list of dicts to write to the output CSV file.
     """
     rows = []
-    fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg', '%change']
+    fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg',
+                  '%change']
     writer = csv.DictWriter(output_file, fieldnames=fieldnames)
     writer.writeheader()
     for row in rows:
@@ -250,7 +254,8 @@ def print_versions(label, results):
     for opersys in results:
         print '    {}: {}'.format(opersys, results[opersys]['version'])
         for browser in results[opersys]['browsers']:
-            print '        {}: {}'.format(browser, results[opersys]['browsers'][browser]['version'])
+            print '        {}: {}'.format(
+                browser, results[opersys]['browsers'][browser]['version'])
 
 
 def main():
