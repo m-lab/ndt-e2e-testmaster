@@ -234,7 +234,6 @@ def write_results(output_file, rows):
         output_file: an open file handle for writing the output.
         rows: list, a list of dicts to write to the output CSV file.
     """
-    rows = []
     fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg',
                   '%change']
     writer = csv.DictWriter(output_file, fieldnames=fieldnames)
