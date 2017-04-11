@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Compares two different sets of E2E results."""
+"""Compares metrics from two different sets of E2E results."""
 
 import argparse
 import collections
@@ -29,12 +29,39 @@ def parse_options(args):
                         dest='new_csv',
                         required=True,
                         help='Filesystem path to new results CSV file.')
+    parser.add_argument('--output_file',
+                        dest='output_file',
+                        default='./e2e_comparison_results.csv',
+                        help='Filesystem path where output will be written.')
 
     args = parser.parse_args(args)
     return args
 
 
 def parse_filename(filename):
+    """Parses the filename field of the CSV file into its constituent parts.
+
+    An example filename input will look like:
+
+        'osx10.12-chrome57-ndt_js-2017-04-06T215733Z-results.json'
+
+    ... and based on this input the output would look like:
+
+        {
+            'os': 'osx',
+            'os_version': '10.12',
+            'browser': 'chrome',
+            'browser_version': '57',
+            'client': 'ndt_js',
+            'timestamp': '2017-04-06T215733Z'
+        }
+
+    Args:
+        args: str, filename field from a CSV input file.
+
+    Returns:
+        dict: metadata values extracted from the filename. 
+    """
     # All the information we need about the OS, OS version, browser version and
     # NDT client are embedded in the filename field. This regex will be used to
     # help split software from it's version number.
@@ -77,6 +104,15 @@ def parse_filename(filename):
 
 
 def parse_csv(csv_file):
+    """Parses an input CSV file.
+
+    Args:
+        csv_file: an open file handle to a CSV file.
+
+    Returns:
+        A highly nested collections.defaultdict object holding data from an
+        input CSV file.
+    """
     # Creates a collections.defaultdict object which can have as many nested
     # dicts as we may need.
     factory = lambda: collections.defaultdict(factory)
@@ -113,6 +149,15 @@ def parse_csv(csv_file):
 
 
 def average_metrics(results):
+    """Calculates the average for all metrics in input.
+
+    Args:
+        collections.defaultdict: metrics compiled from an input CSV.
+
+    Returns:
+        A nested collections.defaultdict object with individual metrics replaced
+        with aggregated values (mean).
+    """
     avgs = results
     for opersys in results:
         for browser in results[opersys]['browsers']:
@@ -133,7 +178,16 @@ def average_metrics(results):
 
 
 def compare_metrics(old_avgs, new_avgs):
-    print 'os,browser,client,metric,old,new,%change'
+    """Compares aggregated metrics from two different E2E result sets.
+
+    Args:
+        old_avgs: collections.defaultdict, metric averages from an old E2E run.
+        new_avgs: collections.defaultdict, metric averages from an new E2E run.
+
+    Returns:
+
+    """
+    rows = []
     for opersys in new_avgs:
         for browser in new_avgs[opersys]['browsers']:
             for client in new_avgs[opersys]['browsers'][browser]['clients']:
@@ -154,8 +208,49 @@ def compare_metrics(old_avgs, new_avgs):
                     else:
                         delta = 'error'
 
-                    print '{:10},{:10},{:10},{:15},{:7},{:7},{:>7}'.format(opersys, browser,
-                            client, metric, old_avg, new_avg, delta)
+                    row = {
+                        'os': opersys,
+                        'browser': browser,
+                        'client': client,
+                        'metric': metric,
+                        'old_avg': old_avg,
+                        'new_avg': new_avg,
+                        '%change': delta
+                    }
+                    rows.append(row)
+
+                    print '{os:10},{browser:10},{client:10},{metric:15},{old_avg:7},{new_avg:7},{%change:>7}'.format(**row)
+
+    return rows
+
+
+def write_results(output_file, rows):
+    """Writes comparison results to a file in CSV format.
+
+    Args:
+        output_file: an open file handle for writing the output.
+        rows: list, a list of dicts to write to the output CSV file.
+    """
+    rows = []
+    fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg', '%change']
+    writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(row)
+
+
+def print_versions(label, results):
+    """Prints software versions used in each E2E results set.
+
+    Args:
+        label: str, a label to identify the output.
+        results: collections.defaultdict, metric averages from an E2E run.
+    """
+    print label
+    for opersys in results:
+        print '    {}: {}'.format(opersys, results[opersys]['version'])
+        for browser in results[opersys]['browsers']:
+            print '        {}: {}'.format(browser, results[opersys]['browsers'][browser]['version'])
 
 
 def main():
@@ -173,10 +268,22 @@ def main():
         logging.error('IOError: {}'.format(e))
         sys.exit(1)
 
+    # Calculate averages for each metric in each result set
     old_avgs = average_metrics(old_results)
     new_avgs = average_metrics(new_results)
 
-    compare_metrics(old_avgs, new_avgs)
+    # Print software version for each set of results. This is just informational
+    # to the user.
+    print_versions('Versions from old CSV', old_avgs)
+    print_versions('Versions from new CSV', new_avgs)
+
+    results = compare_metrics(old_avgs, new_avgs)
+    try:
+        with open(args.output_file, 'w') as output:
+            write_results(output, results)
+    except IOError as e:
+        logging.error('IOError: {}'.format(e))
+        sys.exit(1)
 
 
 if __name__ == '__main__':
