@@ -112,8 +112,8 @@ def parse_csv(csv_file):
     return e2e_metrics
 
 
-def aggregate_metrics(results):
-    aggs = results
+def average_metrics(results):
+    avgs = results
     for opersys in results:
         for browser in results[opersys]['browsers']:
             for client in results[opersys]['browsers'][browser]['clients']:
@@ -127,9 +127,35 @@ def aggregate_metrics(results):
                         if data:
                             metric_sum += float(data)
                     mean = metric_sum / count
-                    aggs[opersys]['browsers'][browser]['clients'][client][
-                        metric] = mean
-    return aggs
+                    avgs[opersys]['browsers'][browser]['clients'][client][
+                        metric] = round(mean, 2)
+    return avgs
+
+
+def compare_metrics(old_avgs, new_avgs):
+    print 'os,browser,client,metric,old,new,%change'
+    for opersys in new_avgs:
+        for browser in new_avgs[opersys]['browsers']:
+            for client in new_avgs[opersys]['browsers'][browser]['clients']:
+                for metric in new_avgs[opersys]['browsers'][browser]['clients'][
+                        client]:
+                    new_avg = new_avgs[opersys]['browsers'][browser]['clients'][client][metric]
+
+                    # If this OS/browser/client/metric doesn't exist in the old
+                    # results, then note that.
+                    try:
+                        old_avg = old_avgs[opersys]['browsers'][browser]['clients'][client][metric]
+                    except KeyError as e:
+                        old_avg = 'none'
+
+                    # Don't do any division by or to zero, or a string.
+                    if new_avg != 0 and old_avg != 0 and old_avg != 'none':
+                        delta = round((new_avg - old_avg) / new_avg, 2) * 100
+                    else:
+                        delta = 'error'
+
+                    print '{:10},{:10},{:10},{:15},{:7},{:7},{:>7}'.format(opersys, browser,
+                            client, metric, old_avg, new_avg, delta)
 
 
 def main():
@@ -147,8 +173,10 @@ def main():
         logging.error('IOError: {}'.format(e))
         sys.exit(1)
 
-    old_aggs = aggregate_metrics(old_results)
-    new_aggs = aggregate_metrics(new_results)
+    old_avgs = average_metrics(old_results)
+    new_avgs = average_metrics(new_results)
+
+    compare_metrics(old_avgs, new_avgs)
 
 
 if __name__ == '__main__':
