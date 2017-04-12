@@ -204,8 +204,8 @@ def compare_metrics(old_avgs, new_avgs):
                     # a string, we know it's a value we can use, but if it's a
                     # defaultdict, then we can assume that no such
                     # OS/browser/client/metric exists in the old CSV.
-                    old_avg = old_avgs[opersys]['browsers'][browser][
-                            'clients'][client][metric]
+                    old_avg = old_avgs[opersys]['browsers'][browser]['clients'][
+                        client][metric]
                     if type(old_avg) is collections.defaultdict:
                         old_avg = 'none'
 
@@ -291,7 +291,7 @@ def main():
     # row. Here we apply some useful column names for the first row of the CSV
     # file that will be written.
     csv_fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg',
-                  '%change']
+                      '%change']
     try:
         with open(args.output_file, 'w') as output:
             write_results(output, results, csv_fieldnames)
