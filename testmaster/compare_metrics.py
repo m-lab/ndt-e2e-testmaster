@@ -197,11 +197,16 @@ def compare_metrics(old_avgs, new_avgs):
                         client][metric]
 
                     # If this OS/browser/client/metric doesn't exist in the old
-                    # results, then note that.
-                    try:
-                        old_avg = old_avgs[opersys]['browsers'][browser][
+                    # results, then the return type of the following statement
+                    # will be collections.defaultdict. This is because of the
+                    # nature of our defaultdict, which will automatically create
+                    # keys as defaultdicts if they don't already exist. If it's
+                    # a string, we know it's a value we can use, but if it's a
+                    # defaultdict, then we can assume that no such
+                    # OS/browser/client/metric exists in the old CSV.
+                    old_avg = old_avgs[opersys]['browsers'][browser][
                             'clients'][client][metric]
-                    except KeyError as e:
+                    if type(old_avg) is collections.defaultdict:
                         old_avg = 'none'
 
                     # Don't do any division by or to zero, or a string.
@@ -222,7 +227,7 @@ def compare_metrics(old_avgs, new_avgs):
                     rows.append(row)
 
                     print '{os:10},{browser:10},{client:10},{metric:15},' \
-                          '{old_avg:7},{new_avg:7},{%change:>7}'.format(**row)
+                          '{old_avg:>7},{new_avg:>7},{%change:>7}'.format(**row)
 
     return rows
 
