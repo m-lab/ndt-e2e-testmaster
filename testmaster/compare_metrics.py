@@ -72,7 +72,7 @@ def parse_filename(filename):
     # The filenames we know about should contain 7 parts separated by dashes.
     filename_parts = filename.split('-')
     if len(filename_parts) != 7:
-        logging.error('Unknown filename format: {}'.format(row['filename']))
+        logging.error('Unknown filename format: {}'.format(filename_parts[0]))
         sys.exit(1)
 
     # Determines the OS and version
