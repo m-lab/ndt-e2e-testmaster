@@ -232,15 +232,14 @@ def compare_metrics(old_avgs, new_avgs):
     return rows
 
 
-def write_results(output_file, rows):
+def write_results(output_file, rows, fieldnames):
     """Writes comparison results to a file in CSV format.
 
     Args:
         output_file: an open file handle for writing the output.
         rows: list, a list of dicts to write to the output CSV file.
+        filenames: list, the column names for the CSV (first row).
     """
-    fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg',
-                  '%change']
     writer = csv.DictWriter(output_file, fieldnames=fieldnames)
     writer.writeheader()
     for row in rows:
@@ -287,9 +286,15 @@ def main():
     print_versions('Versions from new CSV', new_avgs)
 
     results = compare_metrics(old_avgs, new_avgs)
+
+    # 'results' is a list of dicts, with each dict representing data for one
+    # row. Here we apply some useful column names for the first row of the CSV
+    # file that will be written.
+    csv_fieldnames = ['os', 'browser', 'client', 'metric', 'old_avg', 'new_avg',
+                  '%change']
     try:
         with open(args.output_file, 'w') as output:
-            write_results(output, results)
+            write_results(output, results, csv_fieldnames)
     except IOError as e:
         logging.error('IOError: {}'.format(e))
         sys.exit(1)
