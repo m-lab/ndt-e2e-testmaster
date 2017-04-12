@@ -57,10 +57,10 @@ def parse_filename(filename):
         }
 
     Args:
-        args: str, filename field from a CSV input file.
+        filename: str, filename field from a CSV input file.
 
     Returns:
-        dict: metadata values extracted from the filename. 
+        dict: metadata values extracted from the filename.
     """
     # All the information we need about the OS, OS version, browser version and
     # NDT client are embedded in the filename field. This regex will be used to
@@ -152,7 +152,7 @@ def average_metrics(results):
     """Calculates the average for all metrics in input.
 
     Args:
-        collections.defaultdict: metrics compiled from an input CSV.
+        results: collections.defaultdict, metrics compiled from an input CSV.
 
     Returns:
         A nested collections.defaultdict object with individual metrics replaced
@@ -185,7 +185,7 @@ def compare_metrics(old_avgs, new_avgs):
         new_avgs: collections.defaultdict, metric averages from an new E2E run.
 
     Returns:
-
+        list: a list of dicts containing comparison data.
     """
     rows = []
     for opersys in new_avgs:
@@ -238,7 +238,7 @@ def write_results(output_file, rows, fieldnames):
     Args:
         output_file: an open file handle for writing the output.
         rows: list, a list of dicts to write to the output CSV file.
-        filenames: list, the column names for the CSV (first row).
+        fieldnames: list, the column names for the CSV (first row).
     """
     writer = csv.DictWriter(output_file, fieldnames=fieldnames)
     writer.writeheader()
