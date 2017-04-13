@@ -31,7 +31,7 @@ def parse_options(args):
                         help='Filesystem path to new results CSV file.')
     parser.add_argument('--output_file',
                         dest='output_file',
-                        default='./e2e_comparison_results.csv',
+                        default='e2e_comparison_results.csv',
                         help='Filesystem path where output will be written.')
 
     args = parser.parse_args(args)
