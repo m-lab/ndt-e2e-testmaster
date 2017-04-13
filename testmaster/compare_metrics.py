@@ -63,9 +63,10 @@ def parse_filename(filename):
         dict: metadata values extracted from the filename.
     """
     # All the information we need about the OS, OS version, browser version and
-    # NDT client are embedded in the filename field. This regex will be used to
-    # help split software from it's version number.
-    regex = re.compile('^([a-z]+)(\d.*)$')
+    # NDT client are embedded in the filename field. The following pattern will
+    # be used to help split software from it's version number. For example, it
+    # will split 'chrome57' into ['chrome', '57'].
+    split_pattern = '^([a-z]+)(\d.*)$'
 
     metadata = {}
 
@@ -76,7 +77,7 @@ def parse_filename(filename):
         sys.exit(1)
 
     # Determines the OS and version
-    os_matches = regex.match(filename_parts[0])
+    os_matches = re.match(split_pattern, filename_parts[0])
     if os_matches:
         metadata['os'] = os_matches.groups()[0]
         metadata['os_version'] = os_matches.groups()[1]
@@ -86,7 +87,7 @@ def parse_filename(filename):
         sys.exit(1)
 
     # Determines the browser and version
-    browser_matches = regex.match(filename_parts[1])
+    browser_matches = re.match(split_pattern, filename_parts[1])
     if browser_matches:
         metadata['browser'] = browser_matches.groups()[0]
         metadata['browser_version'] = browser_matches.groups()[1]
