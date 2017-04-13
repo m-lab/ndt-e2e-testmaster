@@ -63,8 +63,10 @@ class CompareMetricsTest(unittest.TestCase):
     def test_parse_options_without_output_file_returns_default(self):
         passed_args = ['--old_csv', '/tmp/lol.csv', '--new_csv',
                        '/opt/rofl.csv']
+        expected_output_file = 'e2e_comparison_results.csv'
+
         args = compare_metrics.parse_options(passed_args)
-        expected_output_file = './e2e_comparison_results.csv'
+
         self.assertEqual(args.output_file, expected_output_file)
 
     def test_parse_csv(self):
@@ -91,17 +93,20 @@ class CompareMetricsTest(unittest.TestCase):
                      'latency', '2017-04-06T200458Z'],
         }
 
-        # Test parsing of OLD_CSV
-        csv = StringIO.StringIO(OLD_CSV)
-        results = compare_metrics.parse_csv(csv)
-        for value, mapping in old_result_mappings.iteritems():
-            self.assertEqual(value, reduce(operator.getitem, mapping, results))
+        # Create parsed CSV objects for both OLD_CSV and NEW_CSV
+        old_csv = StringIO.StringIO(OLD_CSV)
+        old_results = compare_metrics.parse_csv(old_csv)
+        new_csv = StringIO.StringIO(NEW_CSV)
+        new_results = compare_metrics.parse_csv(new_csv)
 
-        # Test parsing of NEW_CSV
-        csv = StringIO.StringIO(NEW_CSV)
-        results = compare_metrics.parse_csv(csv)
+        # Make sure that the parsed results for OLD_CSV and NEW_CSV are what we
+        # expected.
+        for value, mapping in old_result_mappings.iteritems():
+            self.assertEqual(value, reduce(operator.getitem, mapping,
+                                           old_results))
         for value, mapping in new_result_mappings.iteritems():
-            self.assertEqual(value, reduce(operator.getitem, mapping, results))
+            self.assertEqual(value, reduce(operator.getitem, mapping,
+                                           new_results))
 
     def test_average_metrics(self):
         # The dicts returned by average_metrics() are too large to go about
@@ -123,37 +128,38 @@ class CompareMetricsTest(unittest.TestCase):
                       'total_duration'],
         }
 
-        # Test aggreating metrics from OLD_CSV
-        csv = StringIO.StringIO(OLD_CSV)
-        results = compare_metrics.parse_csv(csv)
-        averages = compare_metrics.average_metrics(results)
+        # Aggregate metrics from OLD_CSV
+        old_csv = StringIO.StringIO(OLD_CSV)
+        old_results = compare_metrics.parse_csv(old_csv)
+        old_averages = compare_metrics.average_metrics(old_results)
+        # Aggregate metrics from NEW_CSV
+        new_csv = StringIO.StringIO(NEW_CSV)
+        new_results = compare_metrics.parse_csv(new_csv)
+        new_averages = compare_metrics.average_metrics(new_results)
+
+        # Check whether aggregations for OLD_CSV are the expected ones.
         for value, mapping in old_result_mappings.iteritems():
             self.assertEqual(
-                float(value), reduce(operator.getitem, mapping, averages))
-
-        # Test aggreating metrics from NEW_CSV
-        csv = StringIO.StringIO(NEW_CSV)
-        results = compare_metrics.parse_csv(csv)
-        averages = compare_metrics.average_metrics(results)
+                float(value), reduce(operator.getitem, mapping, old_averages))
+        # Check whether aggregations for NEW_CSV are the expected ones.
         for value, mapping in new_result_mappings.iteritems():
             self.assertEqual(
-                float(value), reduce(operator.getitem, mapping, averages))
+                float(value), reduce(operator.getitem, mapping, new_averages))
 
     def test_compare_metrics(self):
         # Like other tests here, there are too many results to reasonably check
         # for every one of them, so we spot check instead. The spot checks we
         # make can be found in the global variable COMP_OUTPUT.
 
-        # Test aggreating metrics from OLD_CSV
-        csv = StringIO.StringIO(OLD_CSV)
-        results = compare_metrics.parse_csv(csv)
-        old_averages = compare_metrics.average_metrics(results)
-
-        # Test aggreating metrics from NEW_CSV
-        csv = StringIO.StringIO(NEW_CSV)
-        results = compare_metrics.parse_csv(csv)
-        new_averages = compare_metrics.average_metrics(results)
-
+        # Aggregate metrics from OLD_CSV
+        old_csv = StringIO.StringIO(OLD_CSV)
+        old_results = compare_metrics.parse_csv(old_csv)
+        old_averages = compare_metrics.average_metrics(old_results)
+        # Aggregate metrics from NEW_CSV
+        new_csv = StringIO.StringIO(NEW_CSV)
+        new_results = compare_metrics.parse_csv(new_csv)
+        new_averages = compare_metrics.average_metrics(new_results)
+        # Compare the aggregation results
         comps = compare_metrics.compare_metrics(old_averages, new_averages)
 
         # comps is a list of dicts. Make sure that each of our expected dicts is
@@ -167,9 +173,12 @@ osx,firefox,ndt_js,s2c_speed,none,93.8,error\r
 win,firefox,banjo,latency,0.0,43.0,error\r
 ubuntu,chrome,banjo,total_duration,27.7,27.6,-0.0\r\n'''
 
+        # Generate output and write it.
         output_csv = StringIO.StringIO()
         compare_metrics.write_results(output_csv, COMP_OUTPUT,
                                       self.csv_fieldnames)
+
+        # Verify that what was written is what we expected.
         self.assertEquals(expected_file_content, output_csv.getvalue())
 
 
