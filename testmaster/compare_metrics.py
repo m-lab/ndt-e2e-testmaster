@@ -119,32 +119,21 @@ def parse_csv(csv_file):
     factory = lambda: collections.defaultdict(factory)
     e2e_metrics = factory()
 
-    # This is the order of the fields in E2E CSV files. We could use the names
-    # in the first row of the CSV file, but those have spaces and aren't short
-    # or code friendly.
-    fields = ['filename', 'total_duration', 'c2s_speed', 'c2s_duration',
-              's2c_speed', 's2c_duration', 'latency', 'has_error', 'error_list']
-
-    rows = csv.DictReader(csv_file, fields)
+    rows = csv.DictReader(csv_file)
     for row in rows:
-        # The first row of the CSV file has field names, which we don't care
-        # about since we've created our own mapping in the 'fields' list.
-        if row['filename'] == 'Filename':
-            continue
-
         # Extracts metadata about the test from the filename.
         m = parse_filename(row['filename'])
 
-        for field in fields:
-            # We've already processed the field 'filename' and we don't care
-            # about the field 'error_list'.
-            if field in ['filename', 'error_list']:
+        for k, v in row.iteritems():
+            # We've already processes 'filename' above and we don't care about
+            # 'error_list', so skip them.
+            if k in ['filename', 'error_list']:
                 continue
             e2e_metrics[m['os']]['version'] = m['os_version']
             e2e_metrics[m['os']]['browsers'][m['browser']]['version'] = m[
                 'browser_version']
             e2e_metrics[m['os']]['browsers'][m['browser']]['clients'][m[
-                'client']][field][m['timestamp']] = row[field]
+                'client']][k][m['timestamp']] = v
 
     return e2e_metrics
 
