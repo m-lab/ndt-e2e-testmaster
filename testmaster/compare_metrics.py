@@ -129,11 +129,10 @@ def parse_csv(csv_file):
             # 'error_list', so skip them.
             if k in ['filename', 'error_list']:
                 continue
-            e2e_metrics[m['os']]['version'] = m['os_version']
-            e2e_metrics[m['os']]['browsers'][m['browser']]['version'] = m[
-                'browser_version']
-            e2e_metrics[m['os']]['browsers'][m['browser']]['clients'][m[
-                'client']][k][m['timestamp']] = v
+            software = '-'.join([m['os'], m['browser'], m['client']])
+            e2e_metrics[software]['os_version'] = m['os_version']
+            e2e_metrics[software]['browser_version'] = m['browser_version']
+            e2e_metrics[software]['metrics'][k][m['timestamp']] = v
 
     return e2e_metrics
 
@@ -149,21 +148,15 @@ def average_metrics(results):
         with aggregated values (mean).
     """
     avgs = results
-    for opersys in results:
-        for browser in results[opersys]['browsers']:
-            for client in results[opersys]['browsers'][browser]['clients']:
-                for metric in results[opersys]['browsers'][browser]['clients'][
-                        client]:
-                    count = len(results[opersys]['browsers'][browser][
-                        'clients'][client][metric])
-                    metric_sum = 0
-                    for ts, data in results[opersys]['browsers'][browser][
-                            'clients'][client][metric].iteritems():
-                        if data:
-                            metric_sum += float(data)
-                    mean = metric_sum / count
-                    avgs[opersys]['browsers'][browser]['clients'][client][
-                        metric] = round(mean, 2)
+    for software in results:
+        for metric in results[software]['metrics']:
+            count = len(results[software]['metrics'][metric])
+            metric_sum = 0
+            for ts, data in results[software]['metrics'][metric].iteritems():
+                if data:
+                    metric_sum += float(data)
+            mean = metric_sum / count
+            avgs[software]['metrics'][metric] = round(mean, 2)
     return avgs
 
 
@@ -178,46 +171,43 @@ def compare_metrics(old_avgs, new_avgs):
         list: a list of dicts containing comparison data.
     """
     rows = []
-    for opersys in new_avgs:
-        for browser in new_avgs[opersys]['browsers']:
-            for client in new_avgs[opersys]['browsers'][browser]['clients']:
-                for metric in new_avgs[opersys]['browsers'][browser]['clients'][
-                        client]:
-                    new_avg = new_avgs[opersys]['browsers'][browser]['clients'][
-                        client][metric]
 
-                    # If this OS/browser/client/metric doesn't exist in the old
-                    # results, then the return type of the following statement
-                    # will be collections.defaultdict. This is because of the
-                    # nature of our defaultdict, which will automatically create
-                    # keys as defaultdicts if they don't already exist. If it's
-                    # a string, we know it's a value we can use, but if it's a
-                    # defaultdict, then we can assume that no such
-                    # OS/browser/client/metric exists in the old CSV.
-                    old_avg = old_avgs[opersys]['browsers'][browser]['clients'][
-                        client][metric]
-                    if type(old_avg) is collections.defaultdict:
-                        old_avg = 'none'
+    print '# E2E comparison results'
 
-                    # Don't do any division by or to zero, or a string.
-                    if new_avg != 0 and old_avg != 0 and old_avg != 'none':
-                        delta = round((new_avg - old_avg) / new_avg, 2) * 100
-                    else:
-                        delta = 'error'
+    for software in sorted(new_avgs):
+        for metric in new_avgs[software]['metrics']:
+            new_avg = new_avgs[software]['metrics'][metric]
+            # If this software/metric doesn't exist in the old results, then the
+            # return type of the following statement will be
+            # collections.defaultdict. This is because of the nature of our
+            # defaultdict, which will automatically create keys as defaultdicts
+            # if they don't already exist. If it's a string, we know it's a
+            # value we can use, but if it's a defaultdict, then we can assume
+            # that no such software/metric exists in the old CSV.
+            old_avg = old_avgs[software]['metrics'][metric]
+            if type(old_avg) is collections.defaultdict:
+                old_avg = 'none'
 
-                    row = {
-                        'os': opersys,
-                        'browser': browser,
-                        'client': client,
-                        'metric': metric,
-                        'old_avg': old_avg,
-                        'new_avg': new_avg,
-                        '%change': delta
-                    }
-                    rows.append(row)
+            # Don't do any division by or to zero, or a string.
+            if new_avg != 0 and old_avg != 0 and old_avg != 'none':
+                delta = round((new_avg - old_avg) / new_avg, 2) * 100
+            else:
+                delta = 'error'
 
-                    print '{os:10},{browser:10},{client:10},{metric:15},' \
-                          '{old_avg:>7},{new_avg:>7},{%change:>7}'.format(**row)
+            (opersys, browser, client) = software.split('-')
+            row = {
+                'os': opersys,
+                'browser': browser,
+                'client': client,
+                'metric': metric,
+                'old_avg': old_avg,
+                'new_avg': new_avg,
+                '%change': delta
+            }
+            rows.append(row)
+
+            print '{os:10},{browser:10},{client:10},{metric:15},' \
+                  '{old_avg:>7},{new_avg:>7},{%change:>7}'.format(**row)
 
     return rows
 
@@ -236,19 +226,21 @@ def write_results(output_file, rows, fieldnames):
         writer.writerow(row)
 
 
-def print_versions(label, results):
-    """Prints software versions used in each E2E results set.
+def print_software_summary(label, results):
+    """Prints software and versions used in each E2E results set.
 
     Args:
         label: str, a label to identify the output.
         results: collections.defaultdict, metric averages from an E2E run.
     """
     print label
-    for opersys in results:
-        print '    {}: {}'.format(opersys, results[opersys]['version'])
-        for browser in results[opersys]['browsers']:
-            print '        {}: {}'.format(
-                browser, results[opersys]['browsers'][browser]['version'])
+    for software in sorted(results):
+        (opersys, browser, client) = software.split('-')
+        print '    {}: {}, {}: {}, client: {}'.format(
+            opersys, results[software]['os_version'], browser,
+            results[software]['browser_version'], client)
+    # Insert a newline after each software summary
+    print ''
 
 
 def main():
@@ -270,10 +262,10 @@ def main():
     old_avgs = average_metrics(old_results)
     new_avgs = average_metrics(new_results)
 
-    # Print software version for each set of results. This is just informational
-    # to the user.
-    print_versions('Versions from old CSV', old_avgs)
-    print_versions('Versions from new CSV', new_avgs)
+    # Print software and version for each set of results. This is just
+    # informational to the user.
+    print_software_summary('# Software used in old CSV (--old_csv)', old_avgs)
+    print_software_summary('# Software used in new CSV (--new_csv)', old_avgs)
 
     results = compare_metrics(old_avgs, new_avgs)
 
