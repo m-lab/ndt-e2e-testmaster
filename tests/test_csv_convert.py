@@ -60,7 +60,7 @@ class ReadResultsTest(unittest.TestCase):
 
     def test_empty_dictionary_produces_csv_with_just_header_line(self):
         actual_csv = csv_convert.ndt_results_to_csv({})
-        expected_csv = 'Filename,Total Duration (s),Upload Throughput (Mbps),Upload Duration (s),Download Througput (Mbps),Download Duration (s),Latency (ms),Error occurred?,Error List\n'
+        expected_csv = 'filename,total_duration,c2s_throughput,c2s_duration,s2c_throughput,s2c_duration,latency,error,error_list\n'
         self.assertCSVsEqual(expected_csv, actual_csv)
 
     def test_populated_results_produce_correct_csv(self):
@@ -68,7 +68,7 @@ class ReadResultsTest(unittest.TestCase):
             'no-errors.json': NO_ERRORS_RESULT,
             'missing-fields.json': MISSING_FIELDS_RESULT,
         })
-        expected_csv = """Filename,Total Duration (s),Upload Throughput (Mbps),Upload Duration (s),Download Througput (Mbps),Download Duration (s),Latency (ms),Error occurred?,Error List
+        expected_csv = """filename,total_duration,c2s_throughput,c2s_duration,s2c_throughput,s2c_duration,latency,error,error_list
 missing-fields.json,44.2,,,,,,1,"dummy s2c error,dummy c2s error"
 no-errors.json,36.1,0.9,12.9,1.0,11.4,15.0,0,
 """

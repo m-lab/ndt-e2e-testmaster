@@ -7,7 +7,7 @@ import unittest
 from testmaster import compare_metrics
 
 # Sample E2E CSV results
-OLD_CSV = '''Filename,Total Duration (s),Upload Throughput (Mbps),Upload Duration (s),Download Througput (Mbps),Download Duration (s),Latency (ms),Error occurred?,Error List
+OLD_CSV = '''filename,total_duration,c2s_throughput,c2s_duration,s2c_throughput,s2c_duration,latency,error,error_list
 ubuntu14.04-chrome49-banjo-2016-11-29T140016Z-results.json,27.8,94.0,11.4,95.6,10.3,201.0,0,
 ubuntu14.04-chrome49-banjo-2016-11-29T140902Z-results.json,27.6,94.1,11.4,95.6,10.3,202.0,0,
 win10-firefox45-banjo-2016-11-29T130814Z-results.json,15.0,,,,,,1,"Timed out waiting for page to load.,Failed to load URL: http://localhost:53467/search?q=internet+speed+test"
@@ -15,7 +15,7 @@ osx10.11-chrome53-banjo-2016-11-29T150436Z-results.json,30.2,93.0,11.2,79.4,10.2
 osx10.11-chrome53-banjo-2016-11-29T150507Z-results.json,29.7,93.3,11.1,87.4,10.8,55.0,0,'''
 
 # Sample E2E CSV results
-NEW_CSV = '''Filename,Total Duration (s),Upload Throughput (Mbps),Upload Duration (s),Download Througput (Mbps),Download Duration (s),Latency (ms),Error occurred?,Error List
+NEW_CSV = '''filename,total_duration,c2s_throughput,c2s_duration,s2c_throughput,s2c_duration,latency,error,error_list
 osx10.12-chrome57-banjo-2017-04-06T223328Z-results.json,36.0,93.5,11.1,92.8,10.3,73.0,0,
 osx10.12-firefox52-ndt_js-2017-04-06T213908Z-results.json,32.0,94.3,11.9,93.8,10.4,85.0,0,
 osx10.12-firefox52-ndt_js-2017-04-06T213940Z-results.json,32.0,94.2,11.9,93.8,10.4,85.0,0,
@@ -31,7 +31,7 @@ COMP_OUTPUT = [
      'browser': 'firefox',
      'client': 'ndt_js',
      'metric':
-     's2c_speed',
+     's2c_throughput',
      'old_avg': 'none',
      'new_avg': 93.8,
      '%change': 'error'},
@@ -78,7 +78,7 @@ class CompareMetricsTest(unittest.TestCase):
         # global variables.
         old_result_mappings = {
             '79.4': ['osx', 'browsers', 'chrome', 'clients', 'banjo',
-                     's2c_speed', '2016-11-29T150436Z'],
+                     's2c_throughput', '2016-11-29T150436Z'],
             '201.0': ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo',
                       'latency', '2016-11-29T140016Z'],
             '15.0': ['win', 'browsers', 'firefox', 'clients', 'banjo',
@@ -88,7 +88,7 @@ class CompareMetricsTest(unittest.TestCase):
             '10.4': ['osx', 'browsers', 'firefox', 'clients', 'ndt_js',
                      's2c_duration', '2017-04-06T213908Z'],
             '94.1': ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo',
-                     'c2s_speed', '2017-04-06T212522Z'],
+                     'c2s_throughput', '2017-04-06T212522Z'],
             '43.0': ['win', 'browsers', 'firefox', 'clients', 'banjo',
                      'latency', '2017-04-06T200458Z'],
         }
@@ -117,13 +117,15 @@ class CompareMetricsTest(unittest.TestCase):
         # NEW_CSV global variables.
         old_result_mappings = {
             '94.05':
-            ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo', 'c2s_speed'],
+            ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo',
+             'c2s_throughput'],
             '83.40':
-            ['osx', 'browsers', 'chrome', 'clients', 'banjo', 's2c_speed'],
+            ['osx', 'browsers', 'chrome', 'clients', 'banjo', 's2c_throughput'],
         }
         new_result_mappings = {
             '94.25':
-            ['osx', 'browsers', 'firefox', 'clients', 'ndt_js', 'c2s_speed'],
+            ['osx', 'browsers', 'firefox', 'clients', 'ndt_js',
+             'c2s_throughput'],
             '33.35': ['win', 'browsers', 'firefox', 'clients', 'banjo',
                       'total_duration'],
         }
@@ -169,7 +171,7 @@ class CompareMetricsTest(unittest.TestCase):
 
     def test_write_results(self):
         expected_file_content = '''os,browser,client,metric,old_avg,new_avg,%change\r
-osx,firefox,ndt_js,s2c_speed,none,93.8,error\r
+osx,firefox,ndt_js,s2c_throughput,none,93.8,error\r
 win,firefox,banjo,latency,0.0,43.0,error\r
 ubuntu,chrome,banjo,total_duration,27.7,27.6,-0.0\r\n'''
 
