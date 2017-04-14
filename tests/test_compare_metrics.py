@@ -77,20 +77,20 @@ class CompareMetricsTest(unittest.TestCase):
         # value (list). These mappings are dervied from the OLD_CSV and NEW_CSV
         # global variables.
         old_result_mappings = {
-            '79.4': ['osx', 'browsers', 'chrome', 'clients', 'banjo',
-                     's2c_throughput', '2016-11-29T150436Z'],
-            '201.0': ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo',
-                      'latency', '2016-11-29T140016Z'],
-            '15.0': ['win', 'browsers', 'firefox', 'clients', 'banjo',
-                     'total_duration', '2016-11-29T130814Z'],
+            '79.4': ['osx-chrome-banjo', 'metrics', 's2c_throughput',
+                     '2016-11-29T150436Z'],
+            '201.0':
+            ['ubuntu-chrome-banjo', 'metrics', 'latency', '2016-11-29T140016Z'],
+            '15.0': ['win-firefox-banjo', 'metrics', 'total_duration',
+                     '2016-11-29T130814Z']
         }
         new_result_mappings = {
-            '10.4': ['osx', 'browsers', 'firefox', 'clients', 'ndt_js',
-                     's2c_duration', '2017-04-06T213908Z'],
-            '94.1': ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo',
-                     'c2s_throughput', '2017-04-06T212522Z'],
-            '43.0': ['win', 'browsers', 'firefox', 'clients', 'banjo',
-                     'latency', '2017-04-06T200458Z'],
+            '10.4': ['osx-firefox-ndt_js', 'metrics', 's2c_duration',
+                     '2017-04-06T213908Z'],
+            '94.1': ['ubuntu-chrome-banjo', 'metrics', 'c2s_throughput',
+                     '2017-04-06T212522Z'],
+            '43.0':
+            ['win-firefox-banjo', 'metrics', 'latency', '2017-04-06T200458Z']
         }
 
         # Create parsed CSV objects for both OLD_CSV and NEW_CSV
@@ -116,18 +116,12 @@ class CompareMetricsTest(unittest.TestCase):
         # the value (list). These mappings are dervied from the OLD_CSV and
         # NEW_CSV global variables.
         old_result_mappings = {
-            '94.05':
-            ['ubuntu', 'browsers', 'chrome', 'clients', 'banjo',
-             'c2s_throughput'],
-            '83.40':
-            ['osx', 'browsers', 'chrome', 'clients', 'banjo', 's2c_throughput'],
+            '94.05': ['ubuntu-chrome-banjo', 'metrics', 'c2s_throughput'],
+            '83.40': ['osx-chrome-banjo', 'metrics', 's2c_throughput']
         }
         new_result_mappings = {
-            '94.25':
-            ['osx', 'browsers', 'firefox', 'clients', 'ndt_js',
-             'c2s_throughput'],
-            '33.35': ['win', 'browsers', 'firefox', 'clients', 'banjo',
-                      'total_duration'],
+            '94.25': ['osx-firefox-ndt_js', 'metrics', 'c2s_throughput'],
+            '33.35': ['win-firefox-banjo', 'metrics', 'total_duration']
         }
 
         # Aggregate metrics from OLD_CSV
