@@ -3,6 +3,7 @@
 
 import argparse
 import collections
+import copy
 import csv
 import logging
 import re
@@ -147,7 +148,7 @@ def average_metrics(results):
         A nested collections.defaultdict object with individual metrics replaced
         with aggregated values (mean).
     """
-    avgs = results
+    avgs = copy.deepcopy(results)
     for software in results:
         for metric in results[software]['metrics']:
             count = len(results[software]['metrics'][metric])
