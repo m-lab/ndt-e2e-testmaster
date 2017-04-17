@@ -34,6 +34,7 @@ def ndt_results_to_csv(results):
     """
     output = io.BytesIO()
     csv_writer = csv.DictWriter(output,
+                                lineterminator='\n',
                                 fieldnames=['filename', 'total_duration',
                                             'c2s_throughput', 'c2s_duration',
                                             's2c_throughput', 's2c_duration',
