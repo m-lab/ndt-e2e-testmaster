@@ -126,7 +126,7 @@ def parse_csv(csv_file):
         m = parse_filename(row['filename'])
 
         for k, v in row.iteritems():
-            # We've already processes 'filename' above and we don't care about
+            # We've already processed 'filename' above and we don't care about
             # 'error_list', so skip them.
             if k in ['filename', 'error_list']:
                 continue
