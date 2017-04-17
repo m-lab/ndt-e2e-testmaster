@@ -221,7 +221,9 @@ def write_results(output_file, rows, fieldnames):
         rows: list, a list of dicts to write to the output CSV file.
         fieldnames: list, the column names for the CSV (first row).
     """
-    writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+    writer = csv.DictWriter(output_file,
+                            lineterminator='\n',
+                            fieldnames=fieldnames)
     writer.writeheader()
     for row in rows:
         writer.writerow(row)

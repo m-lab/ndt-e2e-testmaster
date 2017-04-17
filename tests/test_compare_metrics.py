@@ -2,6 +2,7 @@
 
 import operator
 import StringIO
+import textwrap
 import unittest
 
 from testmaster import compare_metrics
@@ -135,10 +136,12 @@ class CompareMetricsTest(unittest.TestCase):
             self.assertIn(expected_result, comps)
 
     def test_write_results(self):
-        expected_file_content = '''os,browser,client,metric,old_avg,new_avg,%change\r
-osx,firefox,ndt_js,s2c_throughput,none,93.8,error\r
-win,firefox,banjo,latency,0.0,43.0,error\r
-ubuntu,chrome,banjo,total_duration,27.7,27.6,-0.0\r\n'''
+        expected_file_content = '''\
+            os,browser,client,metric,old_avg,new_avg,%change
+            osx,firefox,ndt_js,s2c_throughput,none,93.8,error
+            win,firefox,banjo,latency,0.0,43.0,error
+            ubuntu,chrome,banjo,total_duration,27.7,27.6,-0.0
+            '''
 
         # Generate output and write it.
         output_csv = StringIO.StringIO()
@@ -146,7 +149,8 @@ ubuntu,chrome,banjo,total_duration,27.7,27.6,-0.0\r\n'''
                                       self.csv_fieldnames)
 
         # Verify that what was written is what we expected.
-        self.assertEquals(expected_file_content, output_csv.getvalue())
+        self.assertEquals(
+            textwrap.dedent(expected_file_content), output_csv.getvalue())
 
 
 if __name__ == '__main__':
