@@ -71,9 +71,9 @@ class CompareMetricsTest(unittest.TestCase):
         # them completely, even with only 4 or 5 sample rows in the CSV, so
         # we'll just spot check. The following dict has the expected metric
         # value as the key and the map to the result for that metric as the
-        # value (list). These mappings are dervied from the OLD_CSV and NEW_CSV
-        # global variables.
-        old_result_mappings = {
+        # value (list). This mapping is dervied from the OLD_CSV global
+        # variable.
+        result_mappings = {
             '79.4': ['osx-chrome-banjo', 'metrics', 's2c_throughput',
                      '2016-11-29T150436Z'],
             '201.0':
@@ -81,63 +81,37 @@ class CompareMetricsTest(unittest.TestCase):
             '15.0': ['win-firefox-banjo', 'metrics', 'total_duration',
                      '2016-11-29T130814Z']
         }
-        new_result_mappings = {
-            '10.4': ['osx-firefox-ndt_js', 'metrics', 's2c_duration',
-                     '2017-04-06T213908Z'],
-            '94.1': ['ubuntu-chrome-banjo', 'metrics', 'c2s_throughput',
-                     '2017-04-06T212522Z'],
-            '43.0':
-            ['win-firefox-banjo', 'metrics', 'latency', '2017-04-06T200458Z']
-        }
 
-        # Create parsed CSV objects for both OLD_CSV and NEW_CSV
-        old_csv = StringIO.StringIO(OLD_CSV)
-        old_results = compare_metrics.parse_csv(old_csv)
-        new_csv = StringIO.StringIO(NEW_CSV)
-        new_results = compare_metrics.parse_csv(new_csv)
+        # Create a parsed CSV object for OLD_CSV
+        csv = StringIO.StringIO(OLD_CSV)
+        results = compare_metrics.parse_csv(csv)
 
-        # Make sure that the parsed results for OLD_CSV and NEW_CSV are what we
+        # Make sure that the parsed results for OLD_CSV are what we
         # expected.
-        for value, mapping in old_result_mappings.iteritems():
-            self.assertEqual(value, reduce(operator.getitem, mapping,
-                                           old_results))
-        for value, mapping in new_result_mappings.iteritems():
-            self.assertEqual(value, reduce(operator.getitem, mapping,
-                                           new_results))
+        for value, mapping in result_mappings.iteritems():
+            self.assertEqual(value, reduce(operator.getitem, mapping, results))
 
     def test_average_metrics(self):
-        # The dicts returned by average_metrics() are too large to go about
-        # checking them completely, even with only 4 or 5 sample rows in the
+        # The dict returned by average_metrics() is too large to go about
+        # checking it completely, even with only 4 or 5 sample rows in the
         # CSV, so we'll just spot check. The following dict has the expected
         # metric value as the key and the map to the result for that metric as
-        # the value (list). These mappings are dervied from the OLD_CSV and
-        # NEW_CSV global variables.
-        old_result_mappings = {
-            '94.05': ['ubuntu-chrome-banjo', 'metrics', 'c2s_throughput'],
-            '83.40': ['osx-chrome-banjo', 'metrics', 's2c_throughput']
-        }
-        new_result_mappings = {
+        # the value (list). This mapping is dervied from the NEW_CSV global
+        # variable.
+        result_mappings = {
             '94.25': ['osx-firefox-ndt_js', 'metrics', 'c2s_throughput'],
             '33.35': ['win-firefox-banjo', 'metrics', 'total_duration']
         }
 
-        # Aggregate metrics from OLD_CSV
-        old_csv = StringIO.StringIO(OLD_CSV)
-        old_results = compare_metrics.parse_csv(old_csv)
-        old_averages = compare_metrics.average_metrics(old_results)
         # Aggregate metrics from NEW_CSV
-        new_csv = StringIO.StringIO(NEW_CSV)
-        new_results = compare_metrics.parse_csv(new_csv)
-        new_averages = compare_metrics.average_metrics(new_results)
+        csv = StringIO.StringIO(NEW_CSV)
+        results = compare_metrics.parse_csv(csv)
+        averages = compare_metrics.average_metrics(results)
 
-        # Check whether aggregations for OLD_CSV are the expected ones.
-        for value, mapping in old_result_mappings.iteritems():
-            self.assertEqual(
-                float(value), reduce(operator.getitem, mapping, old_averages))
         # Check whether aggregations for NEW_CSV are the expected ones.
-        for value, mapping in new_result_mappings.iteritems():
+        for value, mapping in result_mappings.iteritems():
             self.assertEqual(
-                float(value), reduce(operator.getitem, mapping, new_averages))
+                float(value), reduce(operator.getitem, mapping, averages))
 
     def test_compare_metrics(self):
         # Like other tests here, there are too many results to reasonably check
