@@ -75,12 +75,9 @@ class CompareMetricsTest(unittest.TestCase):
         # value (list). This mapping is dervied from the OLD_CSV global
         # variable.
         result_mappings = {
-            '79.4': ['osx-chrome-banjo', 'metrics', 's2c_throughput',
-                     '2016-11-29T150436Z'],
-            '201.0':
-            ['ubuntu-chrome-banjo', 'metrics', 'latency', '2016-11-29T140016Z'],
-            '15.0': ['win-firefox-banjo', 'metrics', 'total_duration',
-                     '2016-11-29T130814Z']
+            '79.4': ['osx-chrome-banjo', 'metrics', 's2c_throughput'],
+            '201.0': ['ubuntu-chrome-banjo', 'metrics', 'latency'],
+            '15.0': ['win-firefox-banjo', 'metrics', 'total_duration']
         }
 
         # Create a parsed CSV object for OLD_CSV
@@ -90,7 +87,7 @@ class CompareMetricsTest(unittest.TestCase):
         # Make sure that the parsed results for OLD_CSV are what we
         # expected.
         for value, mapping in result_mappings.iteritems():
-            self.assertEqual(value, reduce(operator.getitem, mapping, results))
+            self.assertIn(value, reduce(operator.getitem, mapping, results))
 
     def test_average_metrics(self):
         # The dict returned by average_metrics() is too large to go about

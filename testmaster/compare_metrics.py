@@ -71,10 +71,11 @@ def parse_filename(filename):
 
     metadata = {}
 
-    # The filenames we know about should contain 7 parts separated by dashes.
-    filename_parts = filename.split('-')
-    if len(filename_parts) != 7:
-        logging.error('Unknown filename format: {}'.format(filename_parts[0]))
+    # We only care about the first three dash-separated parts of the filename
+    # (OS, browser, client).
+    filename_parts = filename.split('-', 3)[:3]
+    if len(filename_parts) != 3:
+        logging.error('Unknown filename format: {}'.format(filename))
         sys.exit(1)
 
     # Determines the OS and version
@@ -98,9 +99,6 @@ def parse_filename(filename):
 
     # The NDT client name isn't versioned, so just return it whole.
     metadata['client'] = filename_parts[2]
-
-    # Fields 4-6 are datetime data... rejoin them.
-    metadata['timestamp'] = '-'.join(filename_parts[3:6])
 
     return metadata
 
@@ -133,7 +131,9 @@ def parse_csv(csv_file):
             software = '-'.join([m['os'], m['browser'], m['client']])
             e2e_metrics[software]['os_version'] = m['os_version']
             e2e_metrics[software]['browser_version'] = m['browser_version']
-            e2e_metrics[software]['metrics'][k][m['timestamp']] = v
+            if not type(e2e_metrics[software]['metrics'][k]) == list:
+                e2e_metrics[software]['metrics'][k] = []
+            e2e_metrics[software]['metrics'][k].append(v)
 
     return e2e_metrics
 
@@ -153,7 +153,7 @@ def average_metrics(results):
         for metric in results[software]['metrics']:
             count = len(results[software]['metrics'][metric])
             metric_sum = 0
-            for ts, data in results[software]['metrics'][metric].iteritems():
+            for data in results[software]['metrics'][metric]:
                 if data:
                     metric_sum += float(data)
             mean = metric_sum / count
