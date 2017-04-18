@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Compares metrics from two different sets of E2E results."""
 
+from __future__ import division
+
 import argparse
 import collections
 import copy
@@ -133,7 +135,8 @@ def parse_csv(csv_file):
             e2e_metrics[software]['browser_version'] = m['browser_version']
             if not type(e2e_metrics[software]['metrics'][k]) == list:
                 e2e_metrics[software]['metrics'][k] = []
-            e2e_metrics[software]['metrics'][k].append(v)
+            if v:
+                e2e_metrics[software]['metrics'][k].append(float(v))
 
     return e2e_metrics
 
@@ -151,13 +154,12 @@ def average_metrics(results):
     avgs = copy.deepcopy(results)
     for software in results:
         for metric in results[software]['metrics']:
-            count = len(results[software]['metrics'][metric])
-            metric_sum = 0
-            for data in results[software]['metrics'][metric]:
-                if data:
-                    metric_sum += float(data)
-            mean = metric_sum / count
-            avgs[software]['metrics'][metric] = round(mean, 2)
+            values = results[software]['metrics'][metric]
+            mean = 0
+            if values:
+                metric_sum = sum(map(float, [v for v in values]))
+                mean = round(metric_sum / len(values), 2)
+            avgs[software]['metrics'][metric] = mean
     return avgs
 
 

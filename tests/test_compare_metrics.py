@@ -87,7 +87,8 @@ class CompareMetricsTest(unittest.TestCase):
         # Make sure that the parsed results for OLD_CSV are what we
         # expected.
         for value, mapping in result_mappings.iteritems():
-            self.assertIn(value, reduce(operator.getitem, mapping, results))
+            self.assertIn(
+                float(value), reduce(operator.getitem, mapping, results))
 
     def test_average_metrics(self):
         # The dict returned by average_metrics() is too large to go about
