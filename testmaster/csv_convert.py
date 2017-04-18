@@ -34,22 +34,15 @@ def ndt_results_to_csv(results):
     """
     output = io.BytesIO()
     csv_writer = csv.DictWriter(output,
+                                lineterminator='\n',
                                 fieldnames=['filename', 'total_duration',
                                             'c2s_throughput', 'c2s_duration',
                                             's2c_throughput', 's2c_duration',
                                             'latency', 'error', 'error_list'])
-    # Write a header row with friendly names for each column
-    csv_writer.writerow({
-        'filename': 'Filename',
-        'total_duration': 'Total Duration (s)',
-        'c2s_throughput': 'Upload Throughput (Mbps)',
-        'c2s_duration': 'Upload Duration (s)',
-        's2c_throughput': 'Download Througput (Mbps)',
-        's2c_duration': 'Download Duration (s)',
-        'latency': 'Latency (ms)',
-        'error': 'Error occurred?',
-        'error_list': 'Error List',
-    })
+
+    # Write a header row using the 'fieldnames' parameter.
+    csv_writer.writeheader()
+
     # Sort results so that rows are in ascending order of filename.
     sorted_results = sorted(results.items(), key=operator.itemgetter(0))
     for filename, result in sorted_results:
